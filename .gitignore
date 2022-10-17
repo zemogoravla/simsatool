@@ -23,3 +23,10 @@ __pycache__/satellite.cpython-37.pyc
 __pycache__/simulator.cpython-37.pyc
 __pycache__/util.cpython-37.pyc
 __pycache__/utils.cpython-37.pyc
+
+
+*.png
+/data
+/ponomarenko
+
+
