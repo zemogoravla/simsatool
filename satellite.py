@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Mar 22 08:19:45 2022
 
-
-@author: agomez
-"""
 import numpy as np
 import json
 
 
 class Satellite():
+    """Satellite manager. Holds the main properties of a satellite
+    """
     def __init__(self, 
                  name = 'WorldView',
                  orbit_altitude_in_km = 617,
@@ -43,20 +40,15 @@ class Satellite():
         
     
     def distance_relative_to_orbit_altitude(self, view_zenith_in_degrees):
-        '''
-        Computes the (relative) distance of the satellite to the scene with respect to orbit_altitude
-        
-        Parameters
-        ----------
-        view_zenith_in_degrees : float
-            
+        """Computes the (relative) distance of the satellite to the scene with respect 
+           to orbit_altitude
 
-        Returns
-        -------
-        float
-            satellite_distance / orbit_altitude
+        Args:
+            view_zenith_in_degrees (float): zenith angle of the view
 
-        '''
+        Returns:
+            float: satellite_distance / orbit_altitude
+        """
         
         R = 6371  #earth radius in km
         d0 = self.orbit_altitude_in_km # distance for nadir view in km

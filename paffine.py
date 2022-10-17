@@ -1,24 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Wed Mar 23 15:48:36 2022
 
-@author: agomez
-"""
 
 import os
 import numpy as np
-#from scipy.spatial.transform import Rotation
-#import rpcm
-#import subprocess
-#import json
-#from skimage.io import imread, imsave
-#import glob
+
 
 import sys
 
-#sys.path.append('../rpcfit')
-#from rpcfit import rpc_fit
+
 
 
 
@@ -27,7 +17,7 @@ def camera_rotation_matrix_from_view_angles(zenith_in_degrees,
                                             azimuth_in_degrees, 
                                             roll_in_degrees=None):
     '''
-    camera_rotation_matrix_from_view_angles
+    Camera_rotation_matrix_from_view_angles
     
 
     Parameters
@@ -85,33 +75,7 @@ def camera_rotation_matrix_from_view_angles(zenith_in_degrees,
 
 
 
-# def affine_projection_matrix_from_view_angles(zenith_in_degrees, 
-#                                               azimuth_in_degrees, 
-#                                               roll_in_degrees,
-#                                               focal_pixels_per_meter=3.193, 
-#                                               image_xy_size=[600,600]):
-    
-    
-#     R = camera_rotation_matrix_from_view_angles(zenith_in_degrees, 
-#                                                 azimuth_in_degrees,
-#                                                 roll_in_degrees)
-    
-    
-#     zoom_factor = 1 / satellite_distance_wrt_nadir(zenith_in_degrees, satellite_altitude)
-#     K = np.array([[focal_pixels_per_meter*zoom_factor, 0],[0, focal_pixels_per_meter*zoom_factor]])
-    
-    
-#     image_xy_size = np.array([600,600])
-#     script = get_blender_camera_position_script(R.copy(), K.copy(), image_xy_size.copy())
 
-#     blender_camera_script = get_blender_camera_position_script(R.copy(), K.copy(), image_xy_size.copy())
-
-#     KR = K @ R[:2,:]
-#     P_affine = np.zeros((2,4))
-#     P_affine[:,:3] = KR
-#     P_affine[:,3] = image_xy_size/2
-    
-#     return P_affine, blender_camera_script
 
 
 
@@ -126,6 +90,8 @@ def compute_P_affine(zenith_in_degrees,
                      pixels_per_meter,
                      ):
     '''
+    Computes an affine matrix and the decomposition from the position angles and image size and resolution
+
     Parameters
     ----------
     zenith_in_degrees : float in [0,90)

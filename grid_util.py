@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Mar 22 08:46:47 2022
 
-@author: agomez
-"""
 import os
 import numpy as np
 from scipy.spatial.transform import Rotation
@@ -54,16 +50,7 @@ def get_voi_mesh(aoi, altitude_range=[-100,100],
     resolution=horizontal_resolution
     Northings = np.arange(min_northing, max_northing+resolution, resolution)
     Eastings = np.arange(min_easting, max_easting+resolution, resolution)
-    
-    # # get the min and max heights for the SRTM
-    # height_srtm_all = srtm4.srtm4(Longitudes, Latitudes)
-    # height_srtm_min = np.min(height_srtm_all)
-    # height_srtm_max = np.max(height_srtm_all)
-    # h_min = height_srtm_min - height_guards[0]
-    # h_max = height_srtm_max + height_guards[1]
-    #Heights = np.arange(h_min, h_max+height_resolution ,height_resolution) 
-    
-    
+        
     h_min = altitude_range[0]
     h_max = altitude_range[1]
     Heights = np.arange(h_min, h_max+vertical_resolution ,vertical_resolution) 
@@ -89,20 +76,3 @@ def get_aoi_center(aoi):
     lat = (np.max(lats) + np.min(lats)) / 2
     return lon, lat
 
-
-
-
-# def get_lon_lat_alt_meshgrid(Longitudes, Latitudes, Heights):
-#     lon,lat,alt = np.meshgrid(Longitudes, Latitudes, Heights,indexing='ij' )
-    
-#     return lon,lat,alt
-
-# def get_enu_meshgrid(Eastings,Northings,Heights, utm_origin=None):
-#     e,n,u = np.meshgrid(Eastings, Northings, Heights,indexing='ij' )
-    
-#     # centered if origin is given
-#     if not utm_origin is None:
-#         e -= utm_origin[0]
-#         n -= utm_origin[1]
-    
-#     return e,n,u

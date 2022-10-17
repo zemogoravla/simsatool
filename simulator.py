@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Wed Mar 30 11:57:35 2022
 
-@author: agomez
-"""
 import os
 import paffine
 from satellite import Satellite
@@ -13,6 +9,7 @@ from location import Location
 import paffine
 import rpcfit_util
 
+import copy
 import subprocess
 import shutil
 from util import save_txt
@@ -25,7 +22,20 @@ class Simulator():
                  satellite:Satellite=None, 
                  blender:Blender=None,
                  location:Location=None):
-      
+        """ Construction
+            Simulator(base_dir)   for an existing sim
+            Simulator(base_dir, satellite, blender, location)   for a new sim
+
+        Args:
+            base_dir (str): Base directory for the simulation
+            satellite (Satellite, optional): Satellite instance. Defaults to None.
+            blender (Blender, optional): Blender instance. Defaults to None.
+            location (Location, optional): Location instance. Defaults to None.
+
+        Raises:
+            ValueError: if trying to overwrite an existing sim or trying to read an unexisting sim
+        """
+
         self.base_dir = base_dir
         self.satellite = satellite
         self.blender = blender
@@ -36,7 +46,11 @@ class Simulator():
         if os.path.exists(self.base_dir):
             print('Simulator: base directory exists! Loading configuration...')
             if os.path.exists(self.config_dir):
-                self.load_configuration()
+                sim = self.deserialize(self.simulator_config_filename)
+                self.satellite = sim.satellite
+                self.blender = sim.blender
+                self.location = sim.location
+                #self.load_configuration()
             else:
                 raise ValueError('Simulator: base directory exists but is NOT VALID!')
         else:
@@ -51,7 +65,8 @@ class Simulator():
                 # update the blender scene filename
                 blender.scene_filename = os.path.join(self.blender_model_dir, os.path.basename(blender.scene_filename))
                 
-                self.save_configuration()
+                self.serialize()
+                #self.save_configuration()
 
           
         
@@ -65,12 +80,7 @@ class Simulator():
         
         self.simulator_config_filename = os.path.join(self.config_dir,'simulator_config.pkl')
 
-        # DEPRECATED-------------
-        self.satellite_config_filename = os.path.join(self.config_dir,'satellite_config.json')
-        self.blender_config_filename = os.path.join(self.config_dir,'blender_config.json')
-        self.location_config_filename = os.path.join(self.config_dir,'location_config.json')
-        #------------------------
-    
+       
     def init_directories(self):
         os.makedirs(self.config_dir)
         os.makedirs(self.images_dir)
@@ -80,25 +90,30 @@ class Simulator():
         os.makedirs(self.rpcfit_dir)
         
     
-    def load_configuration(self):
-        self.satellite = Satellite.from_json_file(self.satellite_config_filename)
-        self.blender = Blender.from_json_file(self.blender_config_filename)
-        self.location = Location.from_json_file(self.location_config_filename)
-        
-    def save_configuration(self):
-        self.satellite.to_json_file(self.satellite_config_filename)
-        self.blender.to_json_file(self.blender_config_filename)
-        self.location.to_json_file(self.location_config_filename)
+    
     
     def serialize(self):
+        """Save the simulator as a pickle
+        """
         with open(self.simulator_config_filename ,'wb') as f:
             pickle.dump(self, f)
     
     @staticmethod
     def deserialize(pickle_filename):
+        """Load a simulator from a pickle
+
+        Args:
+            pickle_filename (str): Pickle filename
+
+        Raises:
+            ValueError: if the pickle does not have a Simulator instance
+
+        Returns:
+            Simulator: the retrieved sim
+        """
         with open(pickle_filename, 'rb') as f:
             sim = pickle.load(f)
-            if sim.__class__ == 'Simulator':
+            if not isinstance(sim, Simulator):
                 raise ValueError('Simulator.deserialize: NOT A VALID SIMULATOR PICKLE')
         return sim
         
@@ -107,19 +122,35 @@ class Simulator():
                                   sun_zenith_in_degrees=0, sun_azimuth_in_degrees=0,
                                   overwrite=False,
                                   ):
-            
+        """Generates an image and an RPC file for the view defined by (zenith, azimuth, and roll angles)
+        and the sun position defined by (zenith and azimuth)
+
+        Args:
+            zenith_in_degrees (double): Zenith angle of the view
+            azimuth_in_degrees (double): Azimuth angle of the view
+            roll_in_degrees (double, optional): Reserved for future use, not implemented yet. Defaults to None.
+            sun_zenith_in_degrees (double, optional): Zenith angle of the sun. Defaults to 0.
+            sun_azimuth_in_degrees (double, optional): Azimuth angle of the sun. Defaults to 0.
+            overwrite (bool, optional): _description_. Defaults to False.
+
+        Returns:
+            str: Filename of the image
+            str: Filename of the RPC
+        """
         
         # Filenames ---------------------------------------------------------------
+        view_and_sun_name = f'view_ze_{zenith_in_degrees:05.1f}_view_az_{azimuth_in_degrees:05.1f}_sun_ze_{sun_zenith_in_degrees:05.1f}_sun_az_{sun_azimuth_in_degrees:05.1f}'
+        view_name = f'view_ze_{zenith_in_degrees:05.1f}_view_az_{azimuth_in_degrees:05.1f}' 
         # (a) the filename that will output the blender rendering
-        image_filename = os.path.join(self.images_dir, f'ze_{zenith_in_degrees:05.1f}_az_{azimuth_in_degrees:05.1f}_0001.tif')
+        image_filename = os.path.join(self.images_dir, f'{view_and_sun_name}_0001.tif')
         # (b) the filename we will tell to blender in order to finally get (a) 
         image_filename_for_blender = image_filename[:-8] 
         # (c) the filename of the python camera script for blender
-        blender_camera_script_filename = os.path.join(self.blender_camera_dir, f'blender_camera_ze_{zenith_in_degrees:05.1f}_az_{azimuth_in_degrees:05.1f}.py')
+        blender_camera_script_filename = os.path.join(self.blender_camera_dir, f'blender_camera_{view_and_sun_name}.py')
         # (d) the filename of the shell script that will run Blender
-        blender_command_filename = os.path.join(self.blender_command_dir, f'blender_command_ze_{zenith_in_degrees:05.1f}_az_{azimuth_in_degrees:05.1f}.sh')
+        blender_command_filename = os.path.join(self.blender_command_dir, f'blender_command_{view_and_sun_name}.sh')
         # (e) the filename for the rpc model
-        rpcfit_filename = os.path.join(self.rpcfit_dir, f'rpcfit_ze_{zenith_in_degrees:05.1f}_az_{azimuth_in_degrees:05.1f}.txt')
+        rpcfit_filename = os.path.join(self.rpcfit_dir, f'rpcfit_{view_name}.txt')
         
         
         # Create the image and the rpc---------------------------------------------
@@ -151,60 +182,4 @@ class Simulator():
             subprocess.call(blender_command, shell=True)
 
         return image_filename, rpcfit_filename
-            
     
-    
-
-# def simulate_image_and_rpcfit(zenith, azimuth, roll,
-#                               base_dir, simulation_dir_name,
-#                               blender_scene_filename=None,
-#                               overwrite=False,
-#                               ):
-   
-#     # Direcrory structure. Create if necessary ---------------------------------
-#     if not os.path.exists(base_dir) or not os.path.exists(os.path.join(base_dir,'BLENDER_MODEL')):
-#         raise ValueError('Not a simulation base dir. Create first a base dir')
-    
-    
-#     simulation_dir = os.path.join(base_dir, simulation_dir_name)
-   
-    
-#     # Filenames ---------------------------------------------------------------
-#     # (a) the filename that will output the blender rendering
-#     image_filename = os.path.join(base_dir,'IMAGES', f'ze_{zenith:05.1f}_az_{azimuth:05.1f}_0001.tif')
-#     # (b) the filename we will tell to blender in order to finally get (a) 
-#     image_filename_for_blender = image_filename[:-8] 
-#     # (c) the filename of the python camera script for blender
-#     blender_camera_script_filename = os.path.join(base_dir,'BLENDER_CAMERA', f'blender_camera_ze_{zenith:05.1f}_az_{azimuth:05.1f}.py')
-#     # (d) the filename of the shell script that will run Blender
-#     blender_command_filename = os.path.join(base_dir,'BLENDER_COMMAND', f'blender_command_ze_{zenith:05.1f}_az_{azimuth:05.1f}.sh')
-#     # (e) the filename for the rpc model
-#     rpcfit_filename = os.path.join(base_dir,'RPCFIT', f'rpcfit_ze_{zenith:05.1f}_az_{azimuth:05.1f}.txt')
-    
-    
-#     # Create the image and the rpc---------------------------------------------
-#     if not os.path.isfile(image_filename) or overwrite:
-        
-#         # Compute affine projection matrix from orientation
-#         P_affine, R, K, t = \
-#         paffine.compute_P_affine(zenith, azimuth, roll, image_size_xy_size,
-#                                  satellite_altitude_in_km, satellite_pixels_per_meter)
-        
-#         # Conpute the rpc from the affine projection matrix. Saves result in Ikonos format
-#         rpcfit_util.compute_rpcfit_for_blender(P_affine, rpcfit_filename)
-        
-        
-#         # Get the blender_camera_script
-#         blender_camera_script = blender_util.get_blender_camera_position_script(R, K, image_xy_size)
-        
-#         # Get the blender command. 
-#         blender_command = blender_util.get_blender_command(blender_filename, blender_camera_script_filename, image_filename_for_blender)
-        
-#         #save scripts
-#         save_txt(blender_camera_script_filename, blender_camera_script)
-#         save_txt(blender_command_filename, blender_command)
-        
-#         # run Blender
-#         subprocess.call(blender_command, shell=True)
-        
-        

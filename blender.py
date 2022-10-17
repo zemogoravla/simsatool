@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Wed Mar 23 14:11:14 2022
-
-@author: agomez
-"""
-
 
 import numpy as np
 from scipy.spatial.transform import Rotation
@@ -13,6 +7,8 @@ import json
 
 
 class Blender():
+    """Blender management
+    """
     def __init__(self, scene_filename, image_xy_size):
         self.scene_filename = scene_filename
         self.image_xy_size = image_xy_size
@@ -29,30 +25,20 @@ class Blender():
         s+= f'Image xy size: {self.image_xy_size}'
         return(s)
     
-    def to_json_file(self, json_filename):
-        json_str = json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
-        with open(json_filename,'w') as f:
-            f.write(json_str)
-            
-    @staticmethod
-    def from_json_file(json_filename):
-        with open(json_filename, 'r') as f:
-            c = json.loads(f.read())
-            print(c)
-        b = Blender(c['scene_filename'], 
-                      c['image_xy_size']) 
-                      
-        return b
+    
 
     
     def get_blender_camera_position_script(self, R, K, R_sun=None):
-        '''
-        Returns
-        -------
-        str
-            script to position the blender camera.
-    
-        '''
+        """Python script to position the camera and the sun in the Blender scene
+
+        Args:
+            R (3x3 or 2x3 np.array): Extrinsics of the camera
+            K (): Intrinsics of the camera
+            R_sun (3x3 or 2x3 np.array, optional): Sun rotation matrix. Defaults to None.
+
+        Returns:
+            str: script
+        """
         
         L = np.min(self.image_xy_size)
         
@@ -118,10 +104,10 @@ class Blender():
         script += f'bpy.context.scene.render.image_settings.color_depth = "{self.image_settings_color_depth}"'
 
         #---------------------------------------------------------------------------
-        # NUEVO !!!!  sun rotation --------------------------------
+        # SUN rotation --------------------------------
 
 
-        if R_sun is None:   # sólo para mantener la compatibilidad hacia atrás
+        if R_sun is None:   
             return script
 
         
@@ -141,8 +127,8 @@ class Blender():
         #print(r.as_quat())
         #print(r.as_rotvec())
         
-        # blender usa quaternion w,x,y,z
-        # scipy.spatial.transform usa quaternion x,y,z,w
+        # blender uses quaternion w,x,y,z
+        # scipy.spatial.transform uses quaternion x,y,z,w
         script += '\n'
         script += '#-----------------------------';
         script += '\n'
@@ -165,6 +151,15 @@ class Blender():
     
     
     def get_blender_command(self, blender_python_script_filename, blender_render_filename):
+        """Command to execute Blender and generate the rendered image
+
+        Args:
+            blender_python_script_filename (str): filename of the python script to setup the camera and sun
+            blender_render_filename (str): filename for the image to be rendered
+
+        Returns:
+            str: command to run Blender and do the job
+        """
         command = 'blender -b ' + self.scene_filename + ' '          # execute in backgroud
         command += '-P ' + blender_python_script_filename + ' '      # run the python script
         command += '-o ' + blender_render_filename + ' '             # output filename with no extension

@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Mar 22 09:31:28 2022
-
-@author: agomez
-"""
 
 import rpcm
 import sys
@@ -19,7 +14,8 @@ import utm
 def compute_rpc_from_affine_camera(P_affine, aoi, altitude_range, 
                                    output_filename, lon_lat_alt_origin=None,
                                    horizontal_resolution=2, vertical_resolution=3,
-                                   samples_train=50000, samples_test=100000):
+                                   samples_train=50000, samples_test=100000,
+                                   verbose=False):
     '''
     Compute an RPC model from an affine camera model using RPCFIT
 
@@ -56,26 +52,7 @@ rpcfit
     
     longitudes, latitudes, altitudes, easts, norths = \
     get_voi_mesh(aoi, altitude_range, horizontal_resolution, vertical_resolution)
-    
-                 
-    # aoi = np.load('aoi_sample.npy', allow_pickle=True).item()
-    # rpc = rpcm.rpc_from_rpc_file('rpc_sample.txt')
-    # lon_lat_origin=[-58.5881805419922, -34.4899978637695]
-    # samples = 1000
-    # rpc_approx = camera_approximation.RpcCameraApproximation(rpc,aoi,
-    #                                                          lon_lat_origin=lon_lat_origin,
-    #                                                          samples=samples,
-    #                                                          height_resolution=3, horizontal_resolution=2, 
-    #                                                          height_guards=[100,100], compute_approximation=True)
-    
-
-    # #  SAMPLES
-    # samples_train = 50000
-    # samples_test  = 100000
-
-    #all the loc samples (lon,lat,alt) y (e, n, u)
-    
-    
+        
     #
     if lon_lat_alt_origin is None:
         lon, lat = get_aoi_center(aoi)
@@ -109,14 +86,6 @@ rpcfit
     locs_enu_train = locs_enu[indices_train]
     locs_enu_test = locs_enu[indices_test]
 
-
-    # # targets for train and test (projected with rpc)
-    # u_train,v_train = rpc_approx.rpc.projection(locs_train[:,0], locs_train[:,1], locs_train[:,2])
-    # u_test, v_test =  rpc_approx.rpc.projection(locs_test[:,0],  locs_test[:,1],  locs_test[:,2])
-    # target_train = np.vstack((u_train, v_train)).T
-    # target_test = np.vstack((u_test, v_test)).T
-
-
     # targets for train and test (projected with P_affine)
     target_enu_train = P_affine @ np.vstack((locs_enu_train[:, 0],
                                                    locs_enu_train[:, 1],
@@ -136,14 +105,14 @@ rpcfit
                                           , max_iter=20, method='initLcurve'
                                           , plot=plot_option, orientation = 'projloc', get_log=True )
     
-    # evaluate on training set
-    rmse_err, mae, planimetry = rpc_fit.evaluate(rpc_calib, locs_train, target_enu_train)
-    print('RPCFIT - Training set :   Mean X-RMSE {:e}     Mean Y-RMSE {:e}'.format(*rmse_err))
-    
-    # evaluate on the test set
-    rmse_err, mae, planimetry = rpc_fit.evaluate(rpc_calib, locs_test, target_enu_test)
-    print('RPCFIT - Test set :   Mean X-RMSE {:e}     Mean Y-RMSE {:e}'.format(*rmse_err))
-    
-    
+    if verbose:
+        # evaluate on training set
+        rmse_err, mae, planimetry = rpc_fit.evaluate(rpc_calib, locs_train, target_enu_train)
+        print('RPCFIT - Training set :   Mean X-RMSE {:e}     Mean Y-RMSE {:e}'.format(*rmse_err))
+        
+        # evaluate on the test set
+        rmse_err, mae, planimetry = rpc_fit.evaluate(rpc_calib, locs_test, target_enu_test)
+        print('RPCFIT - Test set :   Mean X-RMSE {:e}     Mean Y-RMSE {:e}'.format(*rmse_err))
+        
     rpc_calib.write_to_file(output_filename)
     

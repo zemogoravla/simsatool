@@ -14,6 +14,14 @@ class Location():
                     'type': 'Polygon'},
                  altitude_range = [-100, 100],
                  lon_lat_alt_origin=None):
+        """Location manager
+
+        Args:
+            name (str, optional): Name of the location. Defaults to 'San Fernando'.
+            aoi (GeoJSON polygon dict, optional): Area of interest. Defaults to {'coordinates': [[ [-58.58923437034032, -34.49059476958225], [-58.58923437034032, -34.4891885066768], [-58.58733243810684, -34.4891885066768], [-58.58733243810684, -34.49059476958225], [-58.58923437034032, -34.49059476958225]]], 'type': 'Polygon'}.
+            altitude_range (list, optional): Min-max altitudes. Defaults to [-100, 100].
+            lon_lat_alt_origin (list), optional): Origin as [Longitude, latitude altitude] . Defaults to None.
+        """
 
         self.name = name
         self.aoi = aoi

@@ -14,10 +14,35 @@
 # of the Sun’s disk. When crossing the horizon, the Sun is at 0 degrees elevation, and when 
 # the Sun is straight up, overhead at what’s called the zenith, its elevation angle is 90 degrees.
 
+# Alternative software: SUNCALC: https://github.com/kylebarron/suncalc-py
+# Note: 
+# Differences w.r.t. sunpos:
+# a) returns angles in radians 
+# b) uses a different azimuth orientation (direction along the horizon, 
+#    measured from south to west), e.g. 0 is south and Math.PI * 3/4 is northwest
+
 
 import math
-def sunpos(when, location, refraction):
+import datetime
+def sunpos(when, location, refraction=False):
+    """Get the sun position for a certain location and date-time
+    https://levelup.gitconnected.com/python-sun-position-for-solar-energy-and-research-7a4ead801777
+    AUTHOR: John Clark Craig  
+    https://jccraig.medium.com/
+
+    Args:
+        when (UTC datetime or (year, month, day, hour, minute, second, timezone) tuple): Date-time instant 
+        location ((latitude, longitude) tuple): Location 
+        refraction (boolean): Take into account refraction. Defaults to False.
+
+    Returns:
+        double: azimuth in degrees
+        double: elevation in degrees
+    """
     # Extract the passed data
+    if isinstance(when, datetime.datetime):
+        when = (when.year, when.month, when.day, when.hour, when.minute, when.second, 0) #MUST BE UTC 
+
     year, month, day, hour, minute, second, timezone = when
     latitude, longitude = location
     # Math typing shortcuts
@@ -96,28 +121,30 @@ if __name__ == "__main__":
     print("Azimuth: ", azimuth, np.deg2rad(azimuth))
     print("Elevation: ", elevation, np. deg2rad(elevation))
     
+    # Expected result
     # When:  (2022, 7, 4, 11, 20, 0, -6)
     # Where:  (40.602778, -104.741667)
     # Azimuth:  121.38
     # Elevation:  61.91
 
+    #-------------------------------------------------------------
 
-    # TRY SUNCALC
+    # TRY SUNCALC (must install first)--------------
     # Returns an object with the following properties:
     # altitude: sun altitude above the horizon in radians, e.g. 0 at the horizon and PI/2 at the zenith (straight over your head)
     # azimuth: sun azimuth in radians (direction along the horizon, measured from south to west), e.g. 0 is south and Math.PI * 3/4 is northwest
 
-    from suncalc import get_position, get_times
-    from datetime import datetime
-    import numpy as np
+    # from suncalc import get_position, get_times
+    # from datetime import datetime
+    # import numpy as np
 
-    datetime_when = datetime.fromisoformat('{}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}{:+03d}:00'.format(*when))
-    lon = location[1]
-    lat = location[0]
-    pos = get_position(datetime_when, lon, lat)
-    print(datetime_when)
-    print(pos)
-    print('suncalc azimuth =', (np.rad2deg(pos['azimuth']) + 180) % 360)
-    print('suncalc altitude =', np.rad2deg(pos['altitude']))
-
+    # datetime_when = datetime.fromisoformat('{}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}{:+03d}:00'.format(*when))
+    # lon = location[1]
+    # lat = location[0]
+    # pos = get_position(datetime_when, lon, lat)
+    # print(datetime_when)
+    # print(pos)
+    # print('suncalc azimuth =', (np.rad2deg(pos['azimuth']) + 180) % 360)
+    # print('suncalc altitude =', np.rad2deg(pos['altitude']))
+    #-------------------------------------------------
 
