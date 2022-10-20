@@ -1,13 +1,10 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 import numpy as np
 from scipy.spatial.transform import Rotation
 import json
 
 
 class Blender():
-    """Blender management
+    """Blender manager
     """
     def __init__(self, scene_filename, image_xy_size):
         self.scene_filename = scene_filename
@@ -22,7 +19,10 @@ class Blender():
     def __str__(self):
         s = 'Blender\n'
         s+= f'Scene filename: {self.scene_filename}\n'
-        s+= f'Image xy size: {self.image_xy_size}'
+        s+= f'Image xy size: {self.image_xy_size}\n'
+        s+= f'Image file format: {self.image_settings_file_format}\n'
+        s+= f'Image color mode: {self.image_settings_color_mode}\n'
+        s+= f'Image color depth: {self.image_settings_color_depth}'
         return(s)
     
     
@@ -35,6 +35,7 @@ class Blender():
             R (3x3 or 2x3 np.array): Extrinsics of the camera
             K (): Intrinsics of the camera
             R_sun (3x3 or 2x3 np.array, optional): Sun rotation matrix. Defaults to None.
+                                                   If None sun is placed at nadir.     
 
         Returns:
             str: script

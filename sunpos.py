@@ -1,4 +1,5 @@
 # sunpos.py
+# Get the sun position for a certain location and date-time
 # https://levelup.gitconnected.com/python-sun-position-for-solar-energy-and-research-7a4ead801777
 # AUTHOR: John Clark Craig  
 # https://jccraig.medium.com/
@@ -14,13 +15,15 @@
 # of the Sun’s disk. When crossing the horizon, the Sun is at 0 degrees elevation, and when 
 # the Sun is straight up, overhead at what’s called the zenith, its elevation angle is 90 degrees.
 
+
+# --------------------------------------------------------------------------
 # Alternative software: SUNCALC: https://github.com/kylebarron/suncalc-py
 # Note: 
 # Differences w.r.t. sunpos:
 # a) returns angles in radians 
 # b) uses a different azimuth orientation (direction along the horizon, 
 #    measured from south to west), e.g. 0 is south and Math.PI * 3/4 is northwest
-
+# --------------------------------------------------------------------------
 
 import math
 import datetime

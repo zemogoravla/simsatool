@@ -2,26 +2,35 @@ import json
 import os
 
 class S2PConfigurator():
+    """Helper class to create configurations to run the S2P pipeline (https://github.com/centreborelli/s2p)
+       The S2P pipeline is normally run as: s2p <config_filename>
+       where the config is a json with the image and rpc locations of a pair of images
+       and a set of parameters that control the steps of the pipeline.
+
+       This class helps build a configuration starting from a config template.
+    """
     def __init__(self, 
-                #  config_dir,      # directory where the config is created
-                 base_dir,      # Base dir where the configs and the output dirs for S2P execution will be placed
-                #  ref_image_filename,
-                #  ref_rpc_filename,
-                #  sec_image_filename,
-                #  sec_rpc_filename,
-                 template_config_filename = None,  # template to use in the creation of the config
-                 relative_paths_in_config = True,   # images and output dir in the config are relative to the config_filename
-                 altitude_range = None,         # if min max altitudes are known, the disp range can be derived from these
+                 base_dir,
+                 template_config_filename = None,  
+                 relative_paths_in_config = True,   
+                 altitude_range = None,         
                  tile_size = 600,
                  dsm_resolution = 0.3,
                  ):
+        """Constructor of the configurator. 
+           The constructor has a small set of basic parameters of the configuration. Other parameters
+           can be set on an instance with "set_parameter". 
 
-        # self.config_dir = config_dir
+        Args:
+            base_dir (str): Base dir where, by default, the configs and the output dirs for S2P execution will be place
+            template_config_filename (str, optional): template file to use in the creation of the config. Defaults to None.
+            relative_paths_in_config (bool, optional): images and output dir in the config are relative to the config directory. Defaults to True.
+            altitude_range (_type_, optional): if min max altitudes are known, the disp range can be derived from these. Defaults to None.
+            tile_size (int, optional): Tile size to crop the images. Defaults to 600.
+            dsm_resolution (float, optional): Ground smapling distance of the dsm grid. Defaults to 0.3.
+        """
+        
         self.base_dir = base_dir
-        # self.ref_image_filename = ref_image_filename
-        # self.ref_rpc_filename = ref_rpc_filename
-        # self.sec_image_filename = sec_image_filename
-        # self.sec_rpc_filename = sec_rpc_filename
         self.template_config_filename = template_config_filename
         self.relative_paths_in_config = relative_paths_in_config
         self.altitude_range = altitude_range
@@ -42,6 +51,19 @@ class S2PConfigurator():
                             sec_image_filename, sec_rpc_filename,
                             explicit_config_filename=None,
                             explicit_output_dir=None):
+        """Sets the filenames in the config. Used by "create_config", not to be used directly.
+
+        Args:
+            ref_image_filename (str): Path to the reference image of the stereo pair 
+            ref_rpc_filename (str): Path to the RPC of the reference image of the stereo pair
+            sec_image_filename (str): Path to the secondary image of the stereo pair 
+            sec_rpc_filename (str): Path to the RPC of the reference image of the stereo pair
+            explicit_config_filename (str, optional): Used to set a config output dir of the s2p run different
+                                                      from the default. Defaults to None.
+            explicit_output_dir (str, optional): Used to set an output dir of the s2p run different
+                                                 from the default. The default output dir name is built 
+                                                 based on the image filenames. Defaults to None.
+        """
         
         if not explicit_config_filename is None:
             config_directory = os.path.dirname(explicit_config_filename)
@@ -99,6 +121,20 @@ class S2PConfigurator():
                             explicit_config_filename=None,
                             explicit_output_dir=None,
                             overwrite=False):
+        """Create and write down the configuration
+
+        Args:
+            ref_image_filename (str): Path to the reference image of the stereo pair 
+            ref_rpc_filename (str): Path to the RPC of the reference image of the stereo pair
+            sec_image_filename (str): Path to the secondary image of the stereo pair 
+            sec_rpc_filename (str): Path to the RPC of the reference image of the stereo pair
+            explicit_config_filename (str, optional): Used to set a config output dir of the s2p run different
+                                                      from the default. Defaults to None.
+            explicit_output_dir (str, optional): Used to set an output dir of the s2p run different
+                                                 from the default. The default output dir name is built 
+                                                 based on the image filenames. Defaults to None.
+            overwrite (bool, optional): Overwrite or not an existing configuration file. Defaults to False.
+        """
         
         # set the files in the config dictionary
         self.set_filenames(ref_image_filename, ref_rpc_filename,
@@ -120,11 +156,16 @@ class S2PConfigurator():
             # save config            
             self.save_config(config_filename)
 
-        return(config_filename)
+        return(config_filename, self.config.copy())
 
 
     @staticmethod
     def template_configuration():
+        """Default configuration dictionary if no configuration filename is passed at construction.  
+
+        Returns:
+            dict: default configuration
+        """
         template =  {"out_dir": "ref_ze_000.0_ref_az_000.0_sec_ze_005.0_sec_az_000.0",
                 "images": [
                     {

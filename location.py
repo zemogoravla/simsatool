@@ -3,6 +3,8 @@ import json
 import numpy as np
 
 class Location():
+    """Location manager.
+    """
     def __init__(self, 
                  name = 'San Fernando',
                  aoi = {'coordinates': [[
@@ -19,17 +21,18 @@ class Location():
         Args:
             name (str, optional): Name of the location. Defaults to 'San Fernando'.
             aoi (GeoJSON polygon dict, optional): Area of interest. Defaults to {'coordinates': [[ [-58.58923437034032, -34.49059476958225], [-58.58923437034032, -34.4891885066768], [-58.58733243810684, -34.4891885066768], [-58.58733243810684, -34.49059476958225], [-58.58923437034032, -34.49059476958225]]], 'type': 'Polygon'}.
-            altitude_range (list, optional): Min-max altitudes. Defaults to [-100, 100].
-            lon_lat_alt_origin (list), optional): Origin as [Longitude, latitude altitude] . Defaults to None.
+            altitude_range (list, optional): Min-max altitudes in meters. Defaults to [-100, 100].
+            lon_lat_alt_origin (list), optional): Origin as [longitude, latitude, altitude] . Defaults to None.
         """
 
         self.name = name
         self.aoi = aoi
         self.altitude_range = altitude_range
 
+        # if lon_lat_alt_origin was not given, set it as the VOI origin
         if lon_lat_alt_origin is None:
             lon, lat = self.aoi_lon_lat_center()
-            self.lon_lat_alt_origin = [lon, lat, 0]
+            self.lon_lat_alt_origin = [lon, lat, (altitude_range[0]+altitude_range[1])/2]
         else:
             self.lon_lat_alt_origin = lon_lat_alt_origin
 
@@ -38,7 +41,8 @@ class Location():
     def __str__(self):
         s = f'Location: {self.name}\n'
         s+= f'aoi: {self.aoi}\n'
-        s+= f'altitude_range(m): {self.altitude_range}'
+        s+= f'altitude_range(m): {self.altitude_range}\n'
+        s+= f'Origin (lon, lat, alt): {self.lon_lat_alt_origin}'
         return(s)
     
     def to_json_file(self, json_filename):

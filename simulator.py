@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 import os
 import paffine
 from satellite import Satellite
@@ -15,13 +12,18 @@ import shutil
 from util import save_txt
 
 import pickle
+from  matching import match_image_values_and_noise_ex
+
+
 
 class Simulator():
-      
+    """Manager for the simulation.
+    """ 
     def __init__(self, base_dir:str, 
                  satellite:Satellite=None, 
                  blender:Blender=None,
-                 location:Location=None):
+                 location:Location=None,
+                 ):
         """ Construction
             Simulator(base_dir)   for an existing sim
             Simulator(base_dir, satellite, blender, location)   for a new sim
@@ -40,6 +42,7 @@ class Simulator():
         self.satellite = satellite
         self.blender = blender
         self.location = location
+        
         
         self.init_directorynames_and_filenames()
         
@@ -65,8 +68,9 @@ class Simulator():
                 # update the blender scene filename
                 blender.scene_filename = os.path.join(self.blender_model_dir, os.path.basename(blender.scene_filename))
                 
+                # persist the Simulation configuration
                 self.serialize()
-                #self.save_configuration()
+                
 
           
         
@@ -89,8 +93,6 @@ class Simulator():
         os.makedirs(self.blender_model_dir)
         os.makedirs(self.rpcfit_dir)
         
-    
-    
     
     def serialize(self):
         """Save the simulator as a pickle
@@ -120,6 +122,7 @@ class Simulator():
     
     def simulate_image_and_rpcfit(self, zenith_in_degrees, azimuth_in_degrees, roll_in_degrees=None, 
                                   sun_zenith_in_degrees=0, sun_azimuth_in_degrees=0,
+                                  target_img_filename=None,
                                   overwrite=False,
                                   ):
         """Generates an image and an RPC file for the view defined by (zenith, azimuth, and roll angles)
@@ -131,6 +134,7 @@ class Simulator():
             roll_in_degrees (double, optional): Reserved for future use, not implemented yet. Defaults to None.
             sun_zenith_in_degrees (double, optional): Zenith angle of the sun. Defaults to 0.
             sun_azimuth_in_degrees (double, optional): Azimuth angle of the sun. Defaults to 0.
+            target_img_filename(str, optional): Filename of image to match values and noise. Defaults to None
             overwrite (bool, optional): _description_. Defaults to False.
 
         Returns:
@@ -180,6 +184,12 @@ class Simulator():
             
             # run Blender
             subprocess.call(blender_command, shell=True)
+
+            if not target_img_filename is None:
+                match_image_values_and_noise_ex(image_filename, target_img_filename, 
+                                                 output_filename=image_filename)
+
+                
 
         return image_filename, rpcfit_filename
     

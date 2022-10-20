@@ -1,12 +1,9 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 import numpy as np
 import json
 
 
 class Satellite():
-    """Satellite manager. Holds the main properties of a satellite
+    """Represents a Satellite in the Simulator. Holds the main properties of a satellite
     """
     def __init__(self, 
                  name = 'WorldView',
