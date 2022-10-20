@@ -15,6 +15,9 @@ To install requirements :
 ### rpcfit
 The module uses this python package [rpcfit](https://github.com/centreborelli/rpcfit) to generate an RPC file from 3D-2D correspondences
 
+### ponomarenko
+The module uses this python package [ponomarenko](https://github.com/centreborelli/ponomarenko/tree/master/ponomarenko) to estimate the noise of an image
+
 
 ### Blender
 
@@ -24,7 +27,7 @@ The rendering of the views is done using Blender. An instalation of [Blender](ht
 ## Usage
 
 To see the usage and test the tool: `python usage.py`  
-This example creates two images and the respective RPC files for two views of a simple 3D scene. It also creates a configuration file to run a stereo reconstruction of the stereo pair on the S2P pipeline.
+This example creates two images and the respective RPC files for two views of a 3D scene. It also creates a configuration file to run a stereo reconstruction of the stereo pair on the S2P pipeline.
 
 The **data** folder contains datasets for the test in `usage.py`
 
