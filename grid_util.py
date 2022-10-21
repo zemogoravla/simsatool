@@ -1,16 +1,9 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 import os
 import numpy as np
 from scipy.spatial.transform import Rotation
-#import rpcm
-#import camera_approximation
-#import util
-#import subprocess
-#import json
+
 from skimage.io import imread, imsave
-#import glob
+
 import utils
 import utm
 
