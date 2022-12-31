@@ -244,7 +244,7 @@ class S2PConfigurator():
                 "relative_sift_match_thresh": True,
                 "epipolar_thresh": 0.5,
                 "exogenous_dem": None,
-                "disp_range_method": "fixed_altitude_range",
+                "disp_range_method": "sift",
                 }
         return template
 
